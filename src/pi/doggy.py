@@ -42,7 +42,7 @@ def create_dog(args):
 
 	return msg["id"]
 
-async def socket(args, uri, wait, next_line, send):
+async def socket(args, uri, wait, next_line, send, file):
 	if args.verbose:
 		print("Connecting to ws", uri)
 	async with websockets.connect(uri) as ws:
@@ -60,6 +60,9 @@ async def socket(args, uri, wait, next_line, send):
 					continue
 			if args.verbose:
 				print(">",line)
+			if(file):
+				file.write(line)
+				file.write("\n")
 			await send(line)
 
 
@@ -92,17 +95,19 @@ async def main(args):
 
 	send = None if args.uri else no_send
 
+	if args.uri:
+		ws_uri = "ws://" + args.uri
+		dog_id = create_dog(args)
+		ws_uri += f"/ws/ing/{dog_id}/1"
+
+	file = open(f"{dog_id}.csv", "a")
+
 	while True:
 		if args.verbose:
 			print("Attempting connection")
 		try:
 			if args.uri:
-				ws_uri = "ws://" + args.uri
-				dog_id = create_dog(args)
-				ws_uri += f"/ws/ing/{dog_id}/1"
-				if args.verbose:
-					print("Using websocket", ws_uri)
-				await socket(args, ws_uri, wait, next_line, send)
+				await socket(args, ws_uri, wait, next_line, send, file)
 			else:
 				if args.verbose:
 					print("No websocket provided")
@@ -114,8 +119,8 @@ async def main(args):
 		except Exception as e:
 			if args.verbose:
 				print("Exception occured. Connection closed due to", e)
-				print("Trying connection again in 5 seconds")
-			await asyncio.sleep(5)
+				print("Trying connection again in 2 seconds")
+			await asyncio.sleep(2)
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Read given serial port.')
