@@ -1,3 +1,10 @@
+'''
+While recording, push any key to cycle between the label options and record the time of the label change
+Push 'q' to stop labeling and print all the labels
+Format:
+    ( [label number], datetime.datetime([year], [month], [day], [hour], [minute], [second], [milisecond]) )
+'''
+
 from datetime import datetime
 from enum import Enum
 
